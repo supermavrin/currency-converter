@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [inputCurrency, setInputCurrency] = useState("USD");
+  const [inputCurrency, setInputCurrency] = useState("EUR");
   const [outputCurrency, setOutputCurrency] = useState("USD");
   const [error, setError] = useState("");
   const [rates, setRates] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(
     function () {
@@ -13,6 +14,7 @@ export default function App() {
 
       const controller = new AbortController();
 
+      setIsLoading(true);
       async function fetchRate() {
         setError("");
         try {
@@ -39,10 +41,11 @@ export default function App() {
       }
 
       fetchRate();
+      setIsLoading(false);
+      setError("");
 
       return function () {
         controller.abort();
-        setError("");
       };
     },
     [query, inputCurrency, outputCurrency]
@@ -54,8 +57,11 @@ export default function App() {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        disabled={isLoading}
       />
       <select
+        value={inputCurrency}
+        disabled={isLoading}
         onChange={(e) => {
           setInputCurrency(e.target.value);
         }}
@@ -65,14 +71,18 @@ export default function App() {
         <option value="CAD">CAD</option>
         <option value="INR">INR</option>
       </select>
-      <select onChange={(e) => setOutputCurrency(e.target.value)}>
+      <select
+        value={outputCurrency}
+        disabled={isLoading}
+        onChange={(e) => setOutputCurrency(e.target.value)}
+      >
         <option value="USD">USD</option>
         <option value="EUR">EUR</option>
         <option value="CAD">CAD</option>
         <option value="INR">INR</option>
       </select>
       <p>{error ? error : ""}</p>
-      <p>{!error && rates ? rates.rates[outputCurrency] : ""}</p>
+      <p>{!error && rates.rates ? rates.rates[outputCurrency] : ""}</p>
     </div>
   );
 }
